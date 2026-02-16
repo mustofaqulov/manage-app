@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Manage LC"
+  },
+  "auth": {
+    "login": "Kirish",
+    "phone": "Telefon raqami",
+    "phonePlaceholder": "+998 XX XXX XX XX",
+    "code": "Tasdiqlash kodi",
+    "codePlaceholder": "5 raqamli kod",
+    "sendCode": "Kod yuborish",
+    "verify": "Tasdiqlash",
+    "firstName": "Ism",
+    "lastName": "Familiya",
+    "email": "Email (ixtiyoriy)",
+    "save": "Saqlash",
+    "logout": "Chiqish"
+  },
+  "home": {
+    "title": "Xush kelibsiz",
+    "startExam": "Imtihonni boshlash",
+    "myHistory": "Mening natijalarim"
+  },
+  "exam": {
+    "preparing": "Tayyorlanish",
+    "recording": "Yozuv",
+    "saving": "Saqlanmoqda",
+    "finished": "Yakunlandi",
+    "start": "Boshlash",
+    "exit": "Chiqish"
+  },
+  "history": {
+    "title": "Tarix",
+    "totalExams": "Jami imtihonlar",
+    "avgScore": "O'rtacha ball",
+    "bestScore": "Eng yaxshi ball"
+  },
+  "common": {
+    "loading": "Yuklanmoqda...",
+    "error": "Xato",
+    "retry": "Qayta urinish",
+    "cancel": "Bekor qilish",
+    "ok": "OK"
+  }
+}

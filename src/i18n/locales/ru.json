@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Manage LC"
+  },
+  "auth": {
+    "login": "Вход",
+    "phone": "Номер телефона",
+    "phonePlaceholder": "+998 XX XXX XX XX",
+    "code": "Код подтверждения",
+    "codePlaceholder": "5-значный код",
+    "sendCode": "Отправить код",
+    "verify": "Подтвердить",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "email": "Email (необязательно)",
+    "save": "Сохранить",
+    "logout": "Выход"
+  },
+  "home": {
+    "title": "Добро пожаловать",
+    "startExam": "Начать экзамен",
+    "myHistory": "Моя история"
+  },
+  "exam": {
+    "preparing": "Подготовка",
+    "recording": "Запись",
+    "saving": "Сохранение",
+    "finished": "Завершено",
+    "start": "Начать",
+    "exit": "Выход"
+  },
+  "history": {
+    "title": "История",
+    "totalExams": "Всего экзаменов",
+    "avgScore": "Средний балл",
+    "bestScore": "Лучший балл"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "cancel": "Отмена",
+    "ok": "OK"
+  }
+}

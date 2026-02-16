@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Manage LC"
+  },
+  "auth": {
+    "login": "Login",
+    "phone": "Phone number",
+    "phonePlaceholder": "+998 XX XXX XX XX",
+    "code": "Verification code",
+    "codePlaceholder": "5-digit code",
+    "sendCode": "Send Code",
+    "verify": "Verify",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email (optional)",
+    "save": "Save",
+    "logout": "Logout"
+  },
+  "home": {
+    "title": "Welcome",
+    "startExam": "Start Exam",
+    "myHistory": "My History"
+  },
+  "exam": {
+    "preparing": "Preparing",
+    "recording": "Recording",
+    "saving": "Saving",
+    "finished": "Finished",
+    "start": "Start",
+    "exit": "Exit"
+  },
+  "history": {
+    "title": "History",
+    "totalExams": "Total exams",
+    "avgScore": "Average score",
+    "bestScore": "Best score"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "ok": "OK"
+  }
+}

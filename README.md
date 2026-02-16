@@ -1,79 +1,248 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Manage LC Mobile - React Native
 
-# Getting Started
+IELTS Speaking mock exam mobile application built with React Native.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## ✨ Features
 
-## Step 1: Start the Metro Server
+- 🎤 Audio recording with MediaRecorder
+- 🤖 AI-powered scoring (Google Gemini)
+- 📊 Score history with charts
+- 🌍 Multi-language (uz, en, ru)
+- 🔐 Telegram bot authentication
+- 📱 Native Android & iOS
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## 🛠️ Tech Stack
 
-To start Metro, run the following command from the _root_ of your React Native project:
+- **React Native**: 0.76
+- **TypeScript**: 5.7
+- **State Management**: Redux Toolkit + RTK Query + React Query
+- **Navigation**: React Navigation 7
+- **Audio**: react-native-audio-recorder-player, react-native-tts
+- **UI**: react-native-linear-gradient, react-native-vector-icons
+- **i18n**: react-i18next
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- React Native CLI
+- Android Studio (for Android)
+- Xcode (for iOS, macOS only)
+
+### Installation
 
 ```bash
-# using npm
-npm start
+# Install dependencies
+npm install
+# or
+yarn install
 
-# OR using Yarn
-yarn start
+# iOS only
+cd ios && pod install && cd ..
 ```
 
-## Step 2: Start your Application
+### Run
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
+**Android:**
 ```bash
-# using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### For iOS
-
+**iOS:**
 ```bash
-# using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+**Start Metro:**
+```bash
+npm start
+```
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+## 📁 Project Structure
 
-## Step 3: Modifying your App
+```
+src/
+├── api/              # API types (from web app)
+├── config/           # Constants, axios
+├── theme/            # Colors, typography
+├── store/            # Redux + RTK Query
+│   ├── api.ts        # RTK Query endpoints
+│   ├── slices/       # Redux slices
+│   └── hooks.ts      # Typed hooks
+├── services/         # Audio, Storage services
+├── navigation/       # React Navigation
+├── screens/          # Screen components
+│   ├── auth/         # Login
+│   ├── home/         # Home screen
+│   ├── tests/        # Test list
+│   ├── exam/         # Exam flow
+│   ├── history/      # Score history
+│   └── profile/      # User profile
+├── components/       # Reusable components
+├── i18n/             # Translations (uz, en, ru)
+└── App.tsx           # Root component
+```
 
-Now that you have successfully run the app, let's modify it.
+## 🎯 Code Reuse from Web App
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+| Component | Reuse % |
+|-----------|---------|
+| API Types | 100% ✅ |
+| Redux Store | 90% ✅ |
+| Constants | 100% ✅ |
+| Axios Config | 95% ✅ |
+| Business Logic | 80% ✅ |
+| i18n | 100% ✅ |
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+## 🔧 Development
 
-## Congratulations! :tada:
+**Reset cache:**
+```bash
+npm run reset
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+**Clean build:**
+```bash
+npm run clean
+```
 
-### Now what?
+**Lint:**
+```bash
+npm run lint
+```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+## 📱 Platform Requirements
 
-# Troubleshooting
+- **Android**: minSdkVersion 24 (Android 7.0+)
+- **iOS**: iOS 13.0+
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## 🌐 Backend API
 
-# Learn More
+Production: `https://api.managelc.uz`
 
-To learn more about React Native, take a look at the following resources:
+## 🎯 Exam Flow State Machine
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+The exam orchestration follows this state machine:
+
+```
+MIC_PERMISSION → START_EXAM → IDLE → PREPARING → RECORDING → SAVING → FINISHED
+                                ↑                                        ↓
+                                └────────────────────────────────────────┘
+                                     (next question or finish)
+```
+
+### Per-Question Flow
+
+1. **PREPARING** (30s default):
+   - Play TTS for question prompt
+   - Countdown timer
+   - Beep sound
+
+2. **RECORDING** (60s default):
+   - Start audio recording (AAC format)
+   - Real-time waveform visualization
+   - Countdown timer
+   - Beep sound
+
+3. **SAVING**:
+   - Stop recording
+   - Upload audio to S3 (presigned URL)
+   - Save response via API
+   - Advance to next question
+
+## 🧩 Key Components
+
+### Exam Components (`src/components/exam/`)
+
+- **ExamHeader**: Progress bar showing question number + exit button
+- **TimerDisplay**: Circular SVG timer with color transitions (green → yellow → red)
+- **StatusIndicator**: Animated status badge (PREPARING/RECORDING/SAVING)
+- **WaveformCanvas**: Real-time audio waveform with 30 animated bars
+
+### Common Components (`src/components/common/`)
+
+- **GradientButton**: Primary/secondary button with gradient and loading states
+- **GlassmorphicCard**: Card with backdrop blur effect
+- **TestCard**: Test list item with CEFR badge, title, description
+- **LoadingSpinner**: Loading state with activity indicator
+- **ErrorView**: Error state with retry button
+
+### Custom Hooks (`src/hooks/`)
+
+- **useExamFlow**: Main exam state machine hook
+  - Manages exam status transitions
+  - Handles timers with 16ms precision (~60 FPS)
+  - Controls audio recording lifecycle
+  - Auto-advances through questions
+
+## 🔑 Environment Variables
+
+Create `.env` file:
+
+```env
+API_BASE_URL=https://api.managelc.uz
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+## 🎨 Design System
+
+### Colors
+```typescript
+PRIMARY_ORANGE: '#FF7300'
+SECONDARY_AMBER: '#F59E0B'
+BACKGROUND_DARK: '#050505'
+SUCCESS: '#10B981'
+WARNING: '#F59E0B'
+ERROR: '#EF4444'
+```
+
+### Typography
+- **Display Large**: 57px, weight 400
+- **Headline Large**: 32px, weight 400
+- **Title Large**: 22px, weight 400
+- **Body Large**: 16px, weight 400
+- **Label Small**: 11px, weight 500
+
+## 📝 TODO
+
+- [ ] Implement S3 audio upload in `useExamFlow.ts:95-97`
+- [ ] Add offline mode with Hive local storage
+- [ ] Implement premium subscription checks
+- [ ] Add push notifications for exam reminders
+- [ ] Integrate Firebase Crashlytics
+- [ ] Add audio playback in history screen
+- [ ] Implement retry logic for failed uploads
+
+## 🔧 Troubleshooting
+
+### Android Build Errors
+```bash
+cd android && ./gradlew clean && cd ..
+npm start -- --reset-cache
+```
+
+### iOS Build Errors
+```bash
+cd ios && pod deintegrate && pod install && cd ..
+npm start -- --reset-cache
+```
+
+### Metro Bundler Issues
+```bash
+npm run reset
+```
+
+### Permission Errors
+- Android: Check `AndroidManifest.xml` has `RECORD_AUDIO` permission
+- iOS: Check `Info.plist` has `NSMicrophoneUsageDescription`
+
+## 🔗 Related Projects
+
+- **manage-LC**: React 19 + TypeScript student web app (source for code reuse)
+- **manage-dash**: React 18 + JavaScript admin dashboard
+
+## 📄 License
+
+Proprietary - All rights reserved
+
