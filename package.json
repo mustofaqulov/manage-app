@@ -10,7 +10,8 @@
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "clean": "cd android && ./gradlew clean && cd .. && cd ios && xcodebuild clean && cd ..",
-    "reset": "watchman watch-del-all && rm -rf node_modules && npm install && npm start --reset-cache"
+    "reset": "watchman watch-del-all && rm -rf node_modules && npm install && npm start --reset-cache",
+    "build:apk": "cd android && .\\gradlew.bat assembleDebug"
   },
   "dependencies": {
     "react": "18.3.1",
