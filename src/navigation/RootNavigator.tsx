@@ -30,7 +30,6 @@ export type RootStackParamList = {
   Subscribe: undefined
   CourseDetail: undefined
   Leaderboard: undefined
-  AttemptDetail: {attemptId: string}
 }
 
 export type TabParamList = {

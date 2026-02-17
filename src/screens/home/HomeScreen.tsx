@@ -2,14 +2,19 @@ import React from 'react'
 import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
+import type {CompositeNavigationProp} from '@react-navigation/native'
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
+import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs'
 import LinearGradient from 'react-native-linear-gradient'
 import {useAppSelector} from '../../store/hooks'
 import {useGetAttemptHistoryQuery, useGetSubscriptionQuery} from '../../store/api'
-import type {RootStackParamList} from '../../navigation/RootNavigator'
+import type {RootStackParamList, TabParamList} from '../../navigation/RootNavigator'
 import {colors, typography, spacing, borderRadius} from '../../theme'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>()
@@ -33,14 +38,14 @@ export default function HomeScreen() {
       label: 'Full Exam',
       desc: 'To\'liq imtihon',
       color: '#3B82F6',
-      onPress: () => navigation.navigate('MockExam' as any),
+      onPress: () => navigation.navigate('MockExam'),
     },
     {
       icon: '🎲',
       label: 'Random',
       desc: 'Tasodifiy savol',
       color: '#8B5CF6',
-      onPress: () => navigation.navigate('MockExam' as any),
+      onPress: () => navigation.navigate('MockExam'),
     },
     {
       icon: '⚙️',
@@ -107,7 +112,7 @@ export default function HomeScreen() {
 
         {/* Hero CTA */}
         <TouchableOpacity
-          onPress={() => navigation.navigate('MockExam' as any)}
+          onPress={() => navigation.navigate('MockExam')}
           activeOpacity={0.9}>
           <LinearGradient
             colors={[colors.PRIMARY_ORANGE, '#FF4500']}
@@ -147,7 +152,7 @@ export default function HomeScreen() {
           <>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>So'nggi natijalar</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('History' as any)}>
+              <TouchableOpacity onPress={() => navigation.navigate('History')}>
                 <Text style={styles.seeAll}>Barchasi →</Text>
               </TouchableOpacity>
             </View>

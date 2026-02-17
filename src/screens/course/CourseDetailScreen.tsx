@@ -2,8 +2,12 @@ import React from 'react'
 import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
 import LinearGradient from 'react-native-linear-gradient'
+import type {RootStackParamList} from '../../navigation/RootNavigator'
 import {colors, typography, spacing, borderRadius} from '../../theme'
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
 const COURSE_MODULES = [
   {
@@ -49,7 +53,7 @@ const COURSE_MODULES = [
 ]
 
 export default function CourseDetailScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavigationProp>()
 
   const completedModules = COURSE_MODULES.filter(m => !m.locked).length
   const progress = (completedModules / COURSE_MODULES.length) * 100
@@ -151,7 +155,7 @@ export default function CourseDetailScreen() {
           </Text>
           <TouchableOpacity
             style={styles.premiumBannerBtn}
-            onPress={() => (navigation as any).navigate('Subscribe')}>
+            onPress={() => navigation.navigate('Subscribe')}>
             <Text style={styles.premiumBannerBtnText}>Obuna bo'lish</Text>
           </TouchableOpacity>
         </LinearGradient>
