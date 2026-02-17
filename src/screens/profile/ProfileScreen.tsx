@@ -1,202 +1,239 @@
 import React from 'react'
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native'
+import {View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
-import {useTranslation} from 'react-i18next'
+import {useNavigation} from '@react-navigation/native'
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {useGetSubscriptionQuery} from '../../store/api'
 import {logout} from '../../store/slices/authSlice'
+import type {RootStackParamList} from '../../navigation/RootNavigator'
 import {colors, typography, spacing, borderRadius} from '../../theme'
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+
+function MenuRow({
+  icon,
+  label,
+  desc,
+  onPress,
+  danger,
+}: {
+  icon: string
+  label: string
+  desc?: string
+  onPress: () => void
+  danger?: boolean
+}) {
+  return (
+    <TouchableOpacity style={styles.menuRow} onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.menuIcon, danger && styles.menuIconDanger]}>
+        <Text style={styles.menuIconText}>{icon}</Text>
+      </View>
+      <View style={styles.menuContent}>
+        <Text style={[styles.menuLabel, danger && styles.menuLabelDanger]}>{label}</Text>
+        {desc && <Text style={styles.menuDesc}>{desc}</Text>}
+      </View>
+      <Text style={styles.menuArrow}>›</Text>
+    </TouchableOpacity>
+  )
+}
+
 export default function ProfileScreen() {
-  const {t} = useTranslation()
+  const navigation = useNavigation<NavigationProp>()
   const dispatch = useAppDispatch()
   const {user} = useAppSelector(state => state.auth)
-  const {data: subscription, isLoading: subscriptionLoading} = useGetSubscriptionQuery()
+  const {data: subscription} = useGetSubscriptionQuery()
+
+  const isSubscribed = subscription?.isSubscribed || false
 
   const handleLogout = () => {
-    dispatch(logout())
-  }
-
-  const handleUpgrade = () => {
-    // TODO: Navigate to subscription/upgrade screen
-    Alert.alert('Coming Soon', 'Subscription upgrade feature will be available soon.')
+    Alert.alert(
+      'Chiqish',
+      'Hisobdan chiqmoqchimisiz?',
+      [
+        {text: 'Bekor qilish', style: 'cancel'},
+        {text: 'Chiqish', style: 'destructive', onPress: () => dispatch(logout())},
+      ],
+    )
   }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString('uz-UZ', {
+      year: 'numeric', month: 'short', day: 'numeric',
     })
   }
 
+  const initials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
+      : user?.firstName?.charAt(0) || '?'
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Profile</Text>
-
-        {/* Subscription Card */}
-        {subscription && (
-          <View
-            style={[
-              styles.subscriptionCard,
-              subscription.isSubscribed ? styles.subscriptionActive : styles.subscriptionInactive,
-            ]}>
-            <View style={styles.subscriptionHeader}>
-              <Text style={styles.subscriptionTitle}>
-                {subscription.isSubscribed ? '✅ Premium Active' : '🔒 Free Plan'}
-              </Text>
-              {!subscription.isSubscribed && (
-                <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
-                  <Text style={styles.upgradeButtonText}>Upgrade</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {subscription.isSubscribed && (
-              <View style={styles.subscriptionDetails}>
-                <View style={styles.dateRow}>
-                  <Text style={styles.dateLabel}>Start Date:</Text>
-                  <Text style={styles.dateValue}>{formatDate(subscription.startDate)}</Text>
-                </View>
-                <View style={styles.dateRow}>
-                  <Text style={styles.dateLabel}>End Date:</Text>
-                  <Text style={styles.dateValue}>{formatDate(subscription.endDate)}</Text>
-                </View>
-              </View>
-            )}
-
-            {!subscription.isSubscribed && (
-              <Text style={styles.subscriptionDescription}>
-                Upgrade to Premium to access all tests and features
-              </Text>
-            )}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Avatar & Name */}
+        <View style={styles.profileHeader}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials.toUpperCase()}</Text>
           </View>
-        )}
+          <Text style={styles.fullName}>
+            {user?.firstName} {user?.lastName}
+          </Text>
+          <Text style={styles.phone}>{user?.phone}</Text>
+          {user?.email && <Text style={styles.email}>{user.email}</Text>}
 
-        {/* User Info Card */}
-        {user && (
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Name</Text>
-            <Text style={styles.infoValue}>
-              {user.firstName} {user.lastName}
+          {/* Subscription badge */}
+          <TouchableOpacity
+            style={[styles.subBadge, isSubscribed ? styles.subBadgePremium : styles.subBadgeFree]}
+            onPress={() => navigation.navigate('Subscribe')}>
+            <Text style={styles.subBadgeText}>
+              {isSubscribed ? '⭐ Premium faol' : '🔒 Bepul tarif — Yangilash'}
             </Text>
-
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoValue}>{user.phone}</Text>
-
-            {user.email && (
-              <>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{user.email}</Text>
-              </>
+            {isSubscribed && subscription?.endDate && (
+              <Text style={styles.subBadgeDate}>
+                {formatDate(subscription.endDate)} gacha
+              </Text>
             )}
-          </View>
-        )}
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>{t('auth.logout')}</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Menu Groups */}
+        <View style={styles.menuGroup}>
+          <Text style={styles.menuGroupTitle}>Imtihonlar</Text>
+          <View style={styles.menuCard}>
+            <MenuRow
+              icon="📊"
+              label="Natijalar tarixi"
+              desc="Barcha imtihon natijalarim"
+              onPress={() => navigation.navigate('History' as any)}
+            />
+            <View style={styles.divider} />
+            <MenuRow
+              icon="🏆"
+              label="Reyting jadvali"
+              desc="Top o'rinlar va raqobat"
+              onPress={() => navigation.navigate('Leaderboard')}
+            />
+            <View style={styles.divider} />
+            <MenuRow
+              icon="⚙️"
+              label="Custom imtihon"
+              desc="O'z imtihonimni sozlayman"
+              onPress={() => navigation.navigate('CustomExam')}
+            />
+          </View>
+        </View>
+
+        <View style={styles.menuGroup}>
+          <Text style={styles.menuGroupTitle}>O'rganish</Text>
+          <View style={styles.menuCard}>
+            <MenuRow
+              icon="🎓"
+              label="IELTS kursi"
+              desc="To'liq tayyorgarlik kursi"
+              onPress={() => navigation.navigate('CourseDetail')}
+            />
+            <View style={styles.divider} />
+            <MenuRow
+              icon="⭐"
+              label="Premium obuna"
+              desc={isSubscribed ? 'Faol obuna' : 'Barcha imkoniyatlarni oching'}
+              onPress={() => navigation.navigate('Subscribe')}
+            />
+          </View>
+        </View>
+
+        <View style={styles.menuGroup}>
+          <Text style={styles.menuGroupTitle}>Ilova</Text>
+          <View style={styles.menuCard}>
+            <MenuRow
+              icon="ℹ️"
+              label="Ilova haqida"
+              desc="Platforma va aloqa ma'lumotlari"
+              onPress={() => navigation.navigate('About')}
+            />
+            <View style={styles.divider} />
+            <MenuRow
+              icon="🚪"
+              label="Chiqish"
+              onPress={handleLogout}
+              danger
+            />
+          </View>
+        </View>
+
+        <Text style={styles.version}>Manage LC v1.0.0</Text>
+      </ScrollView>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.BACKGROUND_DARK,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-  },
-  title: {
-    ...typography.headlineLarge,
-    marginBottom: spacing.xl,
-  },
-  subscriptionCard: {
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  subscriptionActive: {
-    backgroundColor: colors.SUCCESS + '20',
-    borderColor: colors.SUCCESS,
-  },
-  subscriptionInactive: {
-    backgroundColor: colors.CARD_GLASS,
-    borderColor: colors.CARD_BORDER,
-  },
-  subscriptionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  container: {flex: 1, backgroundColor: colors.BACKGROUND_DARK},
+  content: {padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl},
+  profileHeader: {alignItems: 'center', gap: spacing.sm},
+  avatar: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.PRIMARY_ORANGE,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  subscriptionTitle: {
-    ...typography.titleLarge,
-    fontWeight: '600',
-  },
-  upgradeButton: {
-    backgroundColor: colors.PRIMARY_ORANGE,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  upgradeButtonText: {
-    ...typography.labelSmall,
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  subscriptionDetails: {
+  avatarText: {fontSize: 32, fontWeight: '900', color: '#000'},
+  fullName: {...typography.headlineMedium, fontWeight: '700', textAlign: 'center'},
+  phone: {...typography.bodyMedium, opacity: 0.5},
+  email: {...typography.bodySmall, opacity: 0.4},
+  subBadge: {
     marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    alignItems: 'center',
   },
-  dateRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: spacing.xs,
+  subBadgePremium: {
+    backgroundColor: colors.PRIMARY_ORANGE + '20',
+    borderColor: colors.PRIMARY_ORANGE,
   },
-  dateLabel: {
-    ...typography.bodyMedium,
-    opacity: 0.7,
+  subBadgeFree: {
+    backgroundColor: colors.CARD_GLASS,
+    borderColor: colors.CARD_BORDER,
   },
-  dateValue: {
-    ...typography.bodyMedium,
-    fontWeight: '500',
-  },
-  subscriptionDescription: {
-    ...typography.bodyMedium,
-    opacity: 0.7,
-    marginTop: spacing.xs,
-  },
-  infoCard: {
+  subBadgeText: {...typography.labelMedium, fontWeight: '700'},
+  subBadgeDate: {...typography.labelSmall, opacity: 0.5, marginTop: 2},
+  menuGroup: {gap: spacing.sm},
+  menuGroupTitle: {...typography.labelSmall, opacity: 0.4, letterSpacing: 1, fontWeight: '700'},
+  menuCard: {
     backgroundColor: colors.CARD_GLASS,
     borderWidth: 1,
     borderColor: colors.CARD_BORDER,
     borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.xl,
+    overflow: 'hidden',
   },
-  infoLabel: {
-    ...typography.labelSmall,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  infoValue: {
-    ...typography.titleLarge,
-  },
-  logoutButton: {
-    backgroundColor: colors.ERROR,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
+  menuRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: spacing.md,
+    gap: spacing.md,
   },
-  logoutText: {
-    ...typography.labelLarge,
-    color: '#FFFFFF',
+  menuIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: borderRadius.sm,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  menuIconDanger: {backgroundColor: 'rgba(239,68,68,0.15)'},
+  menuIconText: {fontSize: 18},
+  menuContent: {flex: 1},
+  menuLabel: {...typography.labelLarge, fontWeight: '600'},
+  menuLabelDanger: {color: '#EF4444'},
+  menuDesc: {...typography.bodySmall, opacity: 0.4, marginTop: 2},
+  menuArrow: {fontSize: 20, opacity: 0.2, fontWeight: '300'},
+  divider: {height: 1, backgroundColor: colors.CARD_BORDER, marginLeft: 54 + spacing.md},
+  version: {...typography.bodySmall, opacity: 0.2, textAlign: 'center'},
 })
