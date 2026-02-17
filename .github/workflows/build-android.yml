@@ -51,9 +51,12 @@ jobs:
         cd android
         ./gradlew assembleRelease --no-daemon
 
+    - name: List APK files
+      run: find android/app/build/outputs/apk -name "*.apk" 2>/dev/null || echo "No APK found"
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: ManageLC-release
-        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: android/app/build/outputs/apk/release/*.apk
         retention-days: 30
