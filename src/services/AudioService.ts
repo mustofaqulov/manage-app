@@ -1,29 +1,18 @@
 import AudioRecorderPlayer from 'react-native-audio-recorder-player'
-import Tts from 'react-native-tts'
-import Sound from 'react-native-sound'
 import {PermissionsAndroid, Platform} from 'react-native'
+
+// NOTE: react-native-tts and react-native-sound are intentionally NOT imported
+// at the module level. On Android, TTS auto-initializes when internet is
+// available and tries to download voice packs, causing native crashes.
+// TTS and beep are non-essential features (users can read question text).
 
 class AudioService {
   private audioRecorderPlayer: AudioRecorderPlayer
   private isRecording = false
   private recordingPath = ''
-  private ttsInitialized = false
 
   constructor() {
     this.audioRecorderPlayer = new AudioRecorderPlayer()
-    // Do NOT call async methods in constructor - causes unhandled promise rejection crash
-  }
-
-  private async ensureTtsInitialized(): Promise<void> {
-    if (this.ttsInitialized) return
-    try {
-      await Tts.setDefaultLanguage('en-US')
-      await Tts.setDefaultRate(0.9)
-      this.ttsInitialized = true
-    } catch (err) {
-      console.warn('TTS initialization failed:', err)
-      // Don't crash - TTS might not be available on this device
-    }
   }
 
   // Request microphone permission
@@ -42,11 +31,11 @@ class AudioService {
         )
         return granted === PermissionsAndroid.RESULTS.GRANTED
       } catch (err) {
-        console.warn(err)
+        console.warn('Permission request error:', err)
         return false
       }
     }
-    return true // iOS handles permission automatically
+    return true
   }
 
   // Start recording
@@ -79,73 +68,31 @@ class AudioService {
       return this.recordingPath
     }
 
-    const result = await this.audioRecorderPlayer.stopRecorder()
-    this.audioRecorderPlayer.removeRecordBackListener()
-    this.isRecording = false
-
-    return result
-  }
-
-  // Play TTS
-  async playTTS(text: string, language = 'en-US'): Promise<void> {
     try {
-      await this.ensureTtsInitialized()
-      return new Promise(resolve => {
-        const finishHandler = () => {
-          Tts.removeEventListener('tts-finish', finishHandler)
-          Tts.removeEventListener('tts-error', errorHandler)
-          resolve()
-        }
-        const errorHandler = () => {
-          Tts.removeEventListener('tts-finish', finishHandler)
-          Tts.removeEventListener('tts-error', errorHandler)
-          resolve() // Resolve anyway to not block exam flow
-        }
-
-        Tts.addEventListener('tts-finish', finishHandler)
-        Tts.addEventListener('tts-error', errorHandler)
-
-        Tts.setDefaultLanguage(language).catch(() => {})
-        Tts.speak(text)
-      })
+      const result = await this.audioRecorderPlayer.stopRecorder()
+      this.audioRecorderPlayer.removeRecordBackListener()
+      this.isRecording = false
+      return result
     } catch (err) {
-      console.warn('TTS playback failed:', err)
-      // Don't crash exam flow if TTS fails
+      console.warn('stopRecording error:', err)
+      this.isRecording = false
+      return this.recordingPath
     }
   }
 
-  // Stop TTS
-  stopTTS() {
-    try {
-      Tts.stop()
-    } catch (err) {
-      console.warn('TTS stop failed:', err)
-    }
+  // Play TTS - disabled (causes native crash on Android when internet is available)
+  // Users can read the question text on screen
+  async playTTS(_text: string, _language = 'en-US'): Promise<void> {
+    return Promise.resolve()
   }
 
-  // Play beep sound
+  stopTTS(): void {
+    // no-op
+  }
+
+  // Play beep - disabled (react-native-sound can cause issues)
   async playBeep(): Promise<void> {
-    return new Promise(resolve => {
-      try {
-        const beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, error => {
-          if (error) {
-            console.log('Failed to load beep sound:', error)
-            resolve()
-            return
-          }
-          beep.play(success => {
-            if (!success) {
-              console.log('Beep playback failed')
-            }
-            beep.release()
-            resolve()
-          })
-        })
-      } catch (err) {
-        console.warn('playBeep error:', err)
-        resolve()
-      }
-    })
+    return Promise.resolve()
   }
 
   // Play audio from URL
@@ -163,7 +110,7 @@ class AudioService {
   }
 
   // Stop audio
-  async stopAudio() {
+  async stopAudio(): Promise<void> {
     try {
       await this.audioRecorderPlayer.stopPlayer()
       this.audioRecorderPlayer.removePlayBackListener()
@@ -173,10 +120,13 @@ class AudioService {
   }
 
   // Cleanup
-  cleanup() {
-    this.stopTTS()
+  cleanup(): void {
     try {
-      this.audioRecorderPlayer.removeRecordBackListener()
+      if (this.isRecording) {
+        this.audioRecorderPlayer.stopRecorder().catch(() => {})
+        this.audioRecorderPlayer.removeRecordBackListener()
+        this.isRecording = false
+      }
       this.audioRecorderPlayer.removePlayBackListener()
     } catch (err) {
       console.warn('AudioService cleanup error:', err)
