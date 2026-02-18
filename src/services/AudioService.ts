@@ -7,15 +7,23 @@ class AudioService {
   private audioRecorderPlayer: AudioRecorderPlayer
   private isRecording = false
   private recordingPath = ''
+  private ttsInitialized = false
 
   constructor() {
     this.audioRecorderPlayer = new AudioRecorderPlayer()
-    this.initTts()
+    // Do NOT call async methods in constructor - causes unhandled promise rejection crash
   }
 
-  private async initTts() {
-    await Tts.setDefaultLanguage('en-US')
-    await Tts.setDefaultRate(0.9)
+  private async ensureTtsInitialized(): Promise<void> {
+    if (this.ttsInitialized) return
+    try {
+      await Tts.setDefaultLanguage('en-US')
+      await Tts.setDefaultRate(0.9)
+      this.ttsInitialized = true
+    } catch (err) {
+      console.warn('TTS initialization failed:', err)
+      // Don't crash - TTS might not be available on this device
+    }
   }
 
   // Request microphone permission
@@ -58,8 +66,8 @@ class AudioService {
     await this.audioRecorderPlayer.startRecorder(path)
     this.isRecording = true
 
-    this.audioRecorderPlayer.addRecordBackListener(e => {
-      // console.log('Recording:', e.currentPosition)
+    this.audioRecorderPlayer.addRecordBackListener(() => {
+      // recording in progress
     })
 
     return path
@@ -80,68 +88,99 @@ class AudioService {
 
   // Play TTS
   async playTTS(text: string, language = 'en-US'): Promise<void> {
-    return new Promise((resolve, reject) => {
-      Tts.setDefaultLanguage(language)
-      Tts.speak(text)
+    try {
+      await this.ensureTtsInitialized()
+      return new Promise(resolve => {
+        const finishHandler = () => {
+          Tts.removeEventListener('tts-finish', finishHandler)
+          Tts.removeEventListener('tts-error', errorHandler)
+          resolve()
+        }
+        const errorHandler = () => {
+          Tts.removeEventListener('tts-finish', finishHandler)
+          Tts.removeEventListener('tts-error', errorHandler)
+          resolve() // Resolve anyway to not block exam flow
+        }
 
-      Tts.addEventListener('tts-finish', () => {
-        resolve()
-      })
+        Tts.addEventListener('tts-finish', finishHandler)
+        Tts.addEventListener('tts-error', errorHandler)
 
-      Tts.addEventListener('tts-error', error => {
-        console.error('TTS Error:', error)
-        resolve() // Resolve anyway to not block exam flow
+        Tts.setDefaultLanguage(language).catch(() => {})
+        Tts.speak(text)
       })
-    })
+    } catch (err) {
+      console.warn('TTS playback failed:', err)
+      // Don't crash exam flow if TTS fails
+    }
   }
 
   // Stop TTS
   stopTTS() {
-    Tts.stop()
+    try {
+      Tts.stop()
+    } catch (err) {
+      console.warn('TTS stop failed:', err)
+    }
   }
 
   // Play beep sound
   async playBeep(): Promise<void> {
     return new Promise(resolve => {
-      const beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, error => {
-        if (error) {
-          console.log('Failed to load beep sound', error)
-          resolve()
-          return
-        }
-
-        beep.play(success => {
-          if (!success) {
-            console.log('Beep playback failed')
+      try {
+        const beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, error => {
+          if (error) {
+            console.log('Failed to load beep sound:', error)
+            resolve()
+            return
           }
-          beep.release()
-          resolve()
+          beep.play(success => {
+            if (!success) {
+              console.log('Beep playback failed')
+            }
+            beep.release()
+            resolve()
+          })
         })
-      })
+      } catch (err) {
+        console.warn('playBeep error:', err)
+        resolve()
+      }
     })
   }
 
   // Play audio from URL
   async playAudio(url: string): Promise<void> {
-    await this.audioRecorderPlayer.startPlayer(url)
-    this.audioRecorderPlayer.addPlayBackListener(e => {
-      if (e.currentPosition === e.duration) {
-        this.audioRecorderPlayer.stopPlayer()
-      }
-    })
+    try {
+      await this.audioRecorderPlayer.startPlayer(url)
+      this.audioRecorderPlayer.addPlayBackListener(e => {
+        if (e.currentPosition === e.duration) {
+          this.audioRecorderPlayer.stopPlayer()
+        }
+      })
+    } catch (err) {
+      console.warn('playAudio failed:', err)
+    }
   }
 
   // Stop audio
   async stopAudio() {
-    await this.audioRecorderPlayer.stopPlayer()
-    this.audioRecorderPlayer.removePlayBackListener()
+    try {
+      await this.audioRecorderPlayer.stopPlayer()
+      this.audioRecorderPlayer.removePlayBackListener()
+    } catch (err) {
+      console.warn('stopAudio failed:', err)
+    }
   }
 
   // Cleanup
   cleanup() {
     this.stopTTS()
-    this.audioRecorderPlayer.removeRecordBackListener()
-    this.audioRecorderPlayer.removePlayBackListener()
+    try {
+      this.audioRecorderPlayer.removeRecordBackListener()
+      this.audioRecorderPlayer.removePlayBackListener()
+    } catch (err) {
+      console.warn('AudioService cleanup error:', err)
+    }
   }
 }
 

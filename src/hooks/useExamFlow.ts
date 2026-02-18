@@ -99,29 +99,31 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
         setState(prev => ({...prev, status: ExamStatus.SAVING}))
 
         try {
-          // 1. Read audio file
-          const audioBase64 = await RNFS.readFile(recordedPath, 'base64')
-          const audioBuffer = Buffer.from(audioBase64, 'base64')
+          // 1. Get file size and blob for upload
+          const fileInfo = await RNFS.stat(recordedPath)
+          const fileUri = recordedPath.startsWith('file://') ? recordedPath : `file://${recordedPath}`
 
           // 2. Get presigned upload URL
           const presignResult = await presignUpload({
             assetType: 'AUDIO' as AssetType,
-            mimeType: 'audio/aac',
-            filename: `response_${question.id}.aac`,
-            fileSizeBytes: audioBuffer.length,
+            mimeType: 'audio/m4a',
+            filename: `response_${question.id}.m4a`,
+            fileSizeBytes: fileInfo.size,
             contextType: 'RESPONSE',
             questionId: question.id,
             attemptId: attemptId,
           }).unwrap()
 
-          // 3. Upload to S3
+          // 3. Upload to S3 using fetch blob (Buffer not available in RN)
+          const fileResponse = await fetch(fileUri)
+          const audioBlob = await fileResponse.blob()
           await fetch(presignResult.uploadUrl, {
             method: presignResult.method,
             headers: {
               ...presignResult.headers,
-              'Content-Type': 'audio/aac',
+              'Content-Type': 'audio/m4a',
             },
-            body: audioBuffer,
+            body: audioBlob,
           })
 
           // 4. Save response with assetId
