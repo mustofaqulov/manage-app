@@ -96,7 +96,7 @@ export default function ExamFlowScreen({route, navigation}: Props) {
     if (state.attemptId) {
       try {
         await submitAttemptMutation(state.attemptId).unwrap()
-        navigation.navigate('History')
+        navigation.navigate('Main', {screen: 'History'})
       } catch (error) {
         Alert.alert('Error', 'Failed to submit exam')
       }
@@ -174,8 +174,8 @@ export default function ExamFlowScreen({route, navigation}: Props) {
                   seconds={state.timerSeconds}
                   totalSeconds={
                     state.status === ExamStatus.PREPARING
-                      ? (currentQuestion?.settings as any)?.delay || 30
-                      : (currentQuestion?.settings as any)?.duration || 60
+                      ? (currentQuestion?.settings.delay as number) || 30
+                      : (currentQuestion?.settings.duration as number) || 60
                   }
                 />
               )}

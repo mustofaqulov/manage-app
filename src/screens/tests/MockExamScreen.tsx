@@ -14,7 +14,8 @@ import {useNavigation} from '@react-navigation/native'
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
 import {useGetTestsQuery, useGetSubscriptionQuery} from '../../store/api'
 import type {RootStackParamList} from '../../navigation/RootNavigator'
-import type {CefrLevel, TestListResponse} from '../../api/types'
+import {CefrLevel} from '../../api/types'
+import type {TestListResponse} from '../../api/types'
 import {colors, typography, spacing, borderRadius} from '../../theme'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import ErrorView from '../../components/common/ErrorView'
@@ -23,12 +24,12 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
 const CEFR_LEVELS: Array<{label: string; value: CefrLevel | undefined}> = [
   {label: 'All', value: undefined},
-  {label: 'A1', value: 'A1'},
-  {label: 'A2', value: 'A2'},
-  {label: 'B1', value: 'B1'},
-  {label: 'B2', value: 'B2'},
-  {label: 'C1', value: 'C1'},
-  {label: 'C2', value: 'C2'},
+  {label: 'A1', value: CefrLevel.A1},
+  {label: 'A2', value: CefrLevel.A2},
+  {label: 'B1', value: CefrLevel.B1},
+  {label: 'B2', value: CefrLevel.B2},
+  {label: 'C1', value: CefrLevel.C1},
+  {label: 'C2', value: CefrLevel.C2},
 ]
 
 const CEFR_COLORS: Record<string, string> = {

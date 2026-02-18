@@ -75,7 +75,7 @@ const authSlice = createSlice({
       action: PayloadAction<{
         user: UserResponse | null
         token: string | null
-        legacyUser: any | null
+        legacyUser: AuthState['legacyUser']
       }>,
     ) => {
       state.user = action.payload.user

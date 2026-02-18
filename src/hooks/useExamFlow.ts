@@ -75,8 +75,8 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
   const runQuestion = useCallback(
     async (question: QuestionResponse, attemptId: string) => {
       try {
-        const prepTime = (question.settings as any)?.delay || 30
-        const recordTime = (question.settings as any)?.duration || 60
+        const prepTime = (question.settings.delay as number) || 30
+        const recordTime = (question.settings.duration as number) || 60
 
         // PREPARING phase
         setState(prev => ({...prev, status: ExamStatus.PREPARING}))

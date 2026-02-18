@@ -1,5 +1,6 @@
 import React, {useEffect} from 'react'
 import {NavigationContainer} from '@react-navigation/native'
+import type {NavigatorScreenParams} from '@react-navigation/native'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import {View, Text, StyleSheet} from 'react-native'
@@ -23,7 +24,7 @@ import CustomExamScreen from '../screens/exam/CustomExamScreen'
 
 export type RootStackParamList = {
   Login: undefined
-  Main: undefined
+  Main: NavigatorScreenParams<TabParamList> | undefined
   ExamFlow: {testId: string; mode?: 'full' | 'random' | 'custom'; selectedSectionIds?: string[]}
   CustomExam: undefined
   About: undefined

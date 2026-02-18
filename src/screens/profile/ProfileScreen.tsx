@@ -2,14 +2,19 @@ import React from 'react'
 import {View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
+import type {CompositeNavigationProp} from '@react-navigation/native'
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
+import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs'
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {useGetSubscriptionQuery} from '../../store/api'
 import {logout} from '../../store/slices/authSlice'
-import type {RootStackParamList} from '../../navigation/RootNavigator'
+import type {RootStackParamList, TabParamList} from '../../navigation/RootNavigator'
 import {colors, typography, spacing, borderRadius} from '../../theme'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>
 
 function MenuRow({
   icon,
@@ -106,7 +111,7 @@ export default function ProfileScreen() {
               icon="📊"
               label="Natijalar tarixi"
               desc="Barcha imtihon natijalarim"
-              onPress={() => navigation.navigate('History' as any)}
+              onPress={() => navigation.navigate('History')}
             />
             <View style={styles.divider} />
             <MenuRow
