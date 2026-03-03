@@ -1,5 +1,5 @@
 import {useState, useRef, useCallback} from 'react'
-import {AppState, Alert} from 'react-native'
+import {Alert} from 'react-native'
 import RNFS from 'react-native-fs'
 import AudioService from '../services/AudioService'
 import {usePresignUploadMutation, useUpsertResponseMutation} from '../store/api'
@@ -34,7 +34,10 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const recordingPathRef = useRef<string>('')
-  const appStateRef = useRef(AppState.currentState)
+  // Ref tracks currentQuestionIndex without stale closure issues
+  const questionIndexRef = useRef(0)
+  // Guard against concurrent question runs (e.g. effect double-firing)
+  const isRunningRef = useRef(false)
 
   // API mutations
   const [presignUpload] = usePresignUploadMutation()
@@ -53,6 +56,7 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
         if (remaining <= 0) {
           if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current)
+            timerIntervalRef.current = null
           }
           setState(prev => ({...prev, timerSeconds: 0}))
           resolve()
@@ -74,6 +78,8 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
   // Run question flow
   const runQuestion = useCallback(
     async (question: QuestionResponse, attemptId: string) => {
+      if (isRunningRef.current) return
+      isRunningRef.current = true
       try {
         const prepTime = (question.settings.delay as number) || 30
         const recordTime = (question.settings.duration as number) || 60
@@ -99,7 +105,7 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
         setState(prev => ({...prev, status: ExamStatus.SAVING}))
 
         try {
-          // 1. Get file size and blob for upload
+          // 1. Get file size for upload
           const fileInfo = await RNFS.stat(recordedPath)
           const fileUri = recordedPath.startsWith('file://') ? recordedPath : `file://${recordedPath}`
 
@@ -143,25 +149,30 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
           Alert.alert('Error', 'Failed to save your response. Please try again.')
           // Don't advance to next question on error
           setState(prev => ({...prev, status: ExamStatus.IDLE}))
+          isRunningRef.current = false
           return
         }
 
-        // Advance to next question or finish
-        if (state.currentQuestionIndex < questions.length - 1) {
+        // Advance to next question or finish using ref to avoid stale closure
+        const nextIndex = questionIndexRef.current + 1
+        isRunningRef.current = false
+        if (nextIndex < questions.length) {
+          questionIndexRef.current = nextIndex
           setState(prev => ({
             ...prev,
             status: ExamStatus.IDLE,
-            currentQuestionIndex: prev.currentQuestionIndex + 1,
+            currentQuestionIndex: nextIndex,
           }))
         } else {
           setState(prev => ({...prev, status: ExamStatus.FINISHED}))
         }
       } catch (error) {
         console.error('Question flow error:', error)
-        // Handle error
+        isRunningRef.current = false
+        setState(prev => ({...prev, status: ExamStatus.IDLE}))
       }
     },
-    [questions.length, startTimer, state.currentQuestionIndex],
+    [questions.length, startTimer, presignUpload, upsertResponse],
   )
 
   // Request mic permission
@@ -180,6 +191,8 @@ export const useExamFlow = (questions: QuestionResponse[]) => {
 
   // Start exam
   const startExam = useCallback((attemptId: string) => {
+    questionIndexRef.current = 0
+    isRunningRef.current = false
     setState(prev => ({
       ...prev,
       status: ExamStatus.IDLE,

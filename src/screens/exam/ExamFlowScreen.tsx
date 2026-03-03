@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useMemo} from 'react'
 import {View, Text, StyleSheet, BackHandler, Alert} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import type {NativeStackScreenProps} from '@react-navigation/native-stack'
@@ -39,7 +39,8 @@ export default function ExamFlowScreen({route, navigation}: Props) {
     {skip: !sectionId},
   )
 
-  const questions = section?.questions || []
+  // Stable reference - prevent useEffect double-fire when RTK Query re-renders
+  const questions = useMemo(() => section?.questions || [], [section])
   const {state, requestMicPermission, startExam, runQuestion, cleanup} =
     useExamFlow(questions)
 

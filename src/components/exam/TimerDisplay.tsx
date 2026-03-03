@@ -71,6 +71,5 @@ const styles = StyleSheet.create({
   },
   timeText: {
     ...typography.displaySmall,
-    fontVariant: ['tabular-nums'],
   },
 })

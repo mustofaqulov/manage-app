@@ -1,8 +1,6 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import type {UserResponse} from '../../api/types'
 import {api} from '../api'
-import {STORAGE_KEYS} from '../../config/constants'
 
 interface AuthState {
   user: UserResponse | null
@@ -36,7 +34,6 @@ const authSlice = createSlice({
       state.user = action.payload.user
       state.token = action.payload.token
       state.isAuthenticated = true
-      // AsyncStorage updates handled by middleware or in component
     },
     setUser: (state, action: PayloadAction<UserResponse>) => {
       state.user = action.payload
@@ -59,12 +56,7 @@ const authSlice = createSlice({
       state.legacyUser = null
       state.isAuthenticated = false
       state.missingInfo = false
-      // Clear AsyncStorage
-      AsyncStorage.multiRemove([
-        STORAGE_KEYS.AUTH_TOKEN,
-        STORAGE_KEYS.USER_DATA,
-        STORAGE_KEYS.LEGACY_USER,
-      ])
+      // AsyncStorage cleanup handled by authPersistenceMiddleware
     },
     setMissingInfo: (state, action: PayloadAction<boolean>) => {
       state.missingInfo = action.payload
@@ -85,25 +77,25 @@ const authSlice = createSlice({
     },
   },
   extraReducers: builder => {
-    // Login mutation
+    // Login mutation — update Redux state synchronously
     builder.addMatcher(api.endpoints.login.matchFulfilled, (state, {payload}) => {
       state.token = payload.token
       state.isAuthenticated = true
       state.missingInfo = payload.missingInfo
-      AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, payload.token)
+      // AsyncStorage persistence handled by authPersistenceMiddleware
     })
 
     // Get me query
     builder.addMatcher(api.endpoints.getMe.matchFulfilled, (state, {payload}) => {
       state.user = payload
-      AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(payload))
+      // AsyncStorage persistence handled by authPersistenceMiddleware
     })
 
     // Update me mutation
     builder.addMatcher(api.endpoints.updateMe.matchFulfilled, (state, {payload}) => {
       state.user = payload
       state.missingInfo = false
-      AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(payload))
+      // AsyncStorage persistence handled by authPersistenceMiddleware
     })
   },
 })

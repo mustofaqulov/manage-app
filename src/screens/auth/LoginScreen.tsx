@@ -65,11 +65,15 @@ export default function LoginScreen() {
       if (result.missingInfo) {
         setStep('PROFILE')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error !== null && 'data' in error
+          ? (error as {data?: {message?: string}}).data?.message
+          : undefined
       Toast.show({
         type: 'error',
         text1: 'Kirish xatosi',
-        text2: error?.data?.message || 'Qayta urinib ko\'ring',
+        text2: message || 'Qayta urinib ko\'ring',
       })
     }
   }
@@ -88,7 +92,7 @@ export default function LoginScreen() {
       }).unwrap()
 
       Toast.show({type: 'success', text1: 'Profil saqlandi'})
-    } catch (error: any) {
+    } catch {
       Toast.show({type: 'error', text1: 'Xato yuz berdi'})
     }
   }

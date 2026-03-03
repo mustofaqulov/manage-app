@@ -2,6 +2,7 @@ import {configureStore} from '@reduxjs/toolkit'
 import {setupListeners} from '@reduxjs/toolkit/query'
 import authReducer from './slices/authSlice'
 import {api} from './api'
+import {authPersistenceMiddleware} from './middleware/authPersistence'
 
 export const store = configureStore({
   reducer: {
@@ -9,11 +10,9 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ['persist/PERSIST'],
-      },
-    }).concat(api.middleware),
+    getDefaultMiddleware()
+      .prepend(authPersistenceMiddleware.middleware)
+      .concat(api.middleware),
 })
 
 setupListeners(store.dispatch)

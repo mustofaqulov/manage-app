@@ -101,11 +101,13 @@ class AudioService {
       await this.audioRecorderPlayer.startPlayer(url)
       this.audioRecorderPlayer.addPlayBackListener(e => {
         if (e.currentPosition === e.duration) {
-          this.audioRecorderPlayer.stopPlayer()
+          this.audioRecorderPlayer.stopPlayer().catch(() => {})
+          this.audioRecorderPlayer.removePlayBackListener()
         }
       })
     } catch (err) {
       console.warn('playAudio failed:', err)
+      this.audioRecorderPlayer.removePlayBackListener()
     }
   }
 

@@ -1,9 +1,9 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {NavigationContainer} from '@react-navigation/native'
 import type {NavigatorScreenParams} from '@react-navigation/native'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
-import {View, Text, StyleSheet} from 'react-native'
+import {View, Text, ActivityIndicator, StyleSheet} from 'react-native'
 import {useAppSelector, useAppDispatch} from '../store/hooks'
 import {hydrateAuth} from '../store/slices/authSlice'
 import StorageService from '../services/StorageService'
@@ -80,16 +80,31 @@ function MainTabs() {
 export function RootNavigator() {
   const {isAuthenticated} = useAppSelector(state => state.auth)
   const dispatch = useAppDispatch()
+  const [isHydrating, setIsHydrating] = useState(true)
 
   useEffect(() => {
     const loadAuthState = async () => {
-      const token = await StorageService.getAuthToken()
-      const user = await StorageService.getUser()
-      const legacyUser = await StorageService.getLegacyUser()
-      dispatch(hydrateAuth({token, user, legacyUser}))
+      try {
+        const token = await StorageService.getAuthToken()
+        const user = await StorageService.getUser()
+        const legacyUser = await StorageService.getLegacyUser()
+        dispatch(hydrateAuth({token, user, legacyUser}))
+      } catch (err) {
+        console.warn('Auth hydration failed:', err)
+      } finally {
+        setIsHydrating(false)
+      }
     }
     loadAuthState()
   }, [dispatch])
+
+  if (isHydrating) {
+    return (
+      <View style={styles.splash}>
+        <ActivityIndicator size="large" color={colors.PRIMARY_ORANGE} />
+      </View>
+    )
+  }
 
   return (
     <NavigationContainer>
@@ -117,6 +132,12 @@ export function RootNavigator() {
 }
 
 const styles = StyleSheet.create({
+  splash: {
+    flex: 1,
+    backgroundColor: colors.BACKGROUND_DARK,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   tabBar: {
     backgroundColor: '#0A0A0A',
     borderTopColor: 'rgba(255,255,255,0.08)',
