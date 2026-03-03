@@ -2,12 +2,10 @@ import React, {useState} from 'react'
 import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
-import {colors, typography, spacing, borderRadius} from '../../theme'
-import {useGetAttemptHistoryQuery} from '../../store/api'
-import type {AttemptListResponse} from '../../api/types'
+import {colors, typography, spacing, borderRadius, CEFR_COLOR_MAP} from '../../theme'
 
-// Since we don't have a dedicated leaderboard API endpoint, we show top attempts
-// from the user's own history as a preview, with a placeholder for global leaderboard
+// Since a dedicated leaderboard API endpoint doesn't exist yet, we show mock data
+// TODO: replace MOCK_LEADERS with a real API call once backend supports it
 
 type Period = 'week' | 'month' | 'all'
 
@@ -24,15 +22,12 @@ const MOCK_LEADERS = [
   {rank: 10, name: 'Ozoda H.', score: 82.6, level: 'B1', badge: '🔟'},
 ]
 
-const CEFR_COLORS: Record<string, string> = {
-  A1: '#10B981', A2: '#34D399', B1: '#3B82F6', B2: '#6366F1', C1: '#F59E0B', C2: '#EF4444',
-}
+const podiumColors = ['#F59E0B', '#9CA3AF', '#CD7C2F']
 
 export default function LeaderboardScreen() {
   const navigation = useNavigation()
+  // Period selector is visual-only until real leaderboard API is available
   const [period, setPeriod] = useState<Period>('week')
-
-  const podiumColors = ['#F59E0B', '#9CA3AF', '#CD7C2F']
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,7 +36,7 @@ export default function LeaderboardScreen() {
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Reyting</Text>
-        <View style={{width: 40}} />
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Period Selector */}
@@ -110,7 +105,7 @@ export default function LeaderboardScreen() {
           <Text style={styles.listHeader}>Top o'rinlar</Text>
         }
         renderItem={({item}) => {
-          const levelColor = CEFR_COLORS[item.level] || colors.PRIMARY_ORANGE
+          const levelColor = CEFR_COLOR_MAP[item.level] ?? colors.PRIMARY_ORANGE
           return (
             <View style={styles.leaderRow}>
               <Text style={styles.rankText}>{item.badge}</Text>
@@ -144,6 +139,7 @@ const styles = StyleSheet.create({
   backBtn: {width: 40, height: 40, justifyContent: 'center'},
   backIcon: {fontSize: 22, color: colors.PRIMARY_ORANGE},
   headerTitle: {...typography.headlineSmall},
+  headerSpacer: {width: 40},
   periodContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,

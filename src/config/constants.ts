@@ -47,7 +47,7 @@ export const COLORS = {
   LEVEL_A1: '#10B981',
   LEVEL_A2: '#34D399',
   LEVEL_B1: '#3B82F6',
-  LEVEL_B2: '#60A5FA',
+  LEVEL_B2: '#6366F1',
   LEVEL_C1: '#F59E0B',
   LEVEL_C2: '#EF4444',
 } as const

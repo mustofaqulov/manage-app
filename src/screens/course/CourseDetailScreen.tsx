@@ -133,8 +133,8 @@ export default function CourseDetailScreen() {
                   <Text style={styles.moduleMetaText}>⏱ {module.duration}</Text>
                 </View>
                 <View style={styles.topicsList}>
-                  {module.topics.map((topic, ti) => (
-                    <Text key={ti} style={styles.topicItem}>• {topic}</Text>
+                  {module.topics.map(topic => (
+                    <Text key={topic} style={styles.topicItem}>• {topic}</Text>
                   ))}
                 </View>
               </View>

@@ -12,7 +12,7 @@ export default function StatusIndicator({status}: Props) {
 
   useEffect(() => {
     if (status === ExamStatus.PREPARING || status === ExamStatus.RECORDING) {
-      Animated.loop(
+      const animation = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.1,
@@ -25,7 +25,12 @@ export default function StatusIndicator({status}: Props) {
             useNativeDriver: true,
           }),
         ]),
-      ).start()
+      )
+      animation.start()
+      return () => {
+        animation.stop()
+        pulseAnim.setValue(1)
+      }
     } else {
       pulseAnim.setValue(1)
     }

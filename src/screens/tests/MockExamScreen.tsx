@@ -16,7 +16,7 @@ import {useGetTestsQuery, useGetSubscriptionQuery} from '../../store/api'
 import type {RootStackParamList} from '../../navigation/RootNavigator'
 import {CefrLevel} from '../../api/types'
 import type {TestListResponse} from '../../api/types'
-import {colors, typography, spacing, borderRadius} from '../../theme'
+import {colors, typography, spacing, borderRadius, CEFR_COLOR_MAP} from '../../theme'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import ErrorView from '../../components/common/ErrorView'
 
@@ -31,15 +31,6 @@ const CEFR_LEVELS: Array<{label: string; value: CefrLevel | undefined}> = [
   {label: 'C1', value: CefrLevel.C1},
   {label: 'C2', value: CefrLevel.C2},
 ]
-
-const CEFR_COLORS: Record<string, string> = {
-  A1: '#10B981',
-  A2: '#34D399',
-  B1: '#3B82F6',
-  B2: '#6366F1',
-  C1: '#F59E0B',
-  C2: '#EF4444',
-}
 
 type ExamMode = 'full' | 'random' | 'custom'
 
@@ -78,7 +69,7 @@ function TestCard({
   onPress: () => void
   isLocked: boolean
 }) {
-  const levelColor = CEFR_COLORS[test.cefrLevel] || colors.PRIMARY_ORANGE
+  const levelColor = CEFR_COLOR_MAP[test.cefrLevel] || colors.PRIMARY_ORANGE
   return (
     <TouchableOpacity style={styles.testCard} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.testCardHeader}>
@@ -180,7 +171,7 @@ export default function MockExamScreen() {
         contentContainerStyle={styles.levelFilterContainer}>
         {CEFR_LEVELS.map(({label, value}) => {
           const isActive = selectedLevel === value
-          const levelColor = value ? CEFR_COLORS[value] : colors.PRIMARY_ORANGE
+          const levelColor = value ? CEFR_COLOR_MAP[value] : colors.PRIMARY_ORANGE
           return (
             <TouchableOpacity
               key={label}

@@ -2,6 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {STORAGE_KEYS} from '../config/constants'
 import type {UserResponse} from '../api/types'
 
+type LegacyUser = {
+  id: string
+  phone: string
+  isSubscribed: boolean
+  subscriptionExpiry?: string
+}
+
 class StorageService {
   // Auth Token
   async saveAuthToken(token: string): Promise<void> {
@@ -41,13 +48,13 @@ class StorageService {
   }
 
   // Legacy User
-  async saveLegacyUser(user: any): Promise<void> {
+  async saveLegacyUser(user: LegacyUser): Promise<void> {
     await AsyncStorage.setItem(STORAGE_KEYS.LEGACY_USER, JSON.stringify(user))
   }
 
-  async getLegacyUser(): Promise<any | null> {
+  async getLegacyUser(): Promise<LegacyUser | null> {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.LEGACY_USER)
-    return data ? JSON.parse(data) : null
+    return data ? (JSON.parse(data) as LegacyUser) : null
   }
 
   // Clear all

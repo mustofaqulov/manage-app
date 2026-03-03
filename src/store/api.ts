@@ -75,7 +75,7 @@ export const api = createApi({
     >({
       query: ({level, page = 0, size = 20}) => ({
         url: '/tests',
-        params: {level, page, size},
+        params: level ? {level, page, size} : {page, size},
       }),
       providesTags: ['Tests'],
     }),

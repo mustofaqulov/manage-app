@@ -52,8 +52,8 @@ export default function AboutScreen() {
         {/* Features */}
         <Text style={styles.sectionTitle}>Imkoniyatlar</Text>
         <View style={styles.featuresGrid}>
-          {features.map((f, i) => (
-            <View key={i} style={styles.featureCard}>
+          {features.map(f => (
+            <View key={f.title} style={styles.featureCard}>
               <Text style={styles.featureIcon}>{f.icon}</Text>
               <Text style={styles.featureTitle}>{f.title}</Text>
               <Text style={styles.featureDesc}>{f.desc}</Text>

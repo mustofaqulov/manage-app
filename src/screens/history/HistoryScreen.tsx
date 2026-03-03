@@ -9,13 +9,10 @@ import {
 } from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useGetAttemptHistoryQuery, useGetAttemptQuery} from '../../store/api'
-import type {AttemptListResponse, CefrLevel} from '../../api/types'
-import {colors, typography, spacing, borderRadius} from '../../theme'
+import type {AttemptListResponse} from '../../api/types'
+import {colors, typography, spacing, borderRadius, CEFR_COLOR_MAP} from '../../theme'
 import {format} from 'date-fns'
-
-const CEFR_COLORS: Record<string, string> = {
-  A1: '#10B981', A2: '#34D399', B1: '#3B82F6', B2: '#6366F1', C1: '#F59E0B', C2: '#EF4444',
-}
+import ErrorView from '../../components/common/ErrorView'
 
 const STATUS_LABELS: Record<string, {label: string; color: string}> = {
   IN_PROGRESS: {label: 'Bajarilmoqda', color: '#3B82F6'},
@@ -52,7 +49,7 @@ const barStyles = StyleSheet.create({
 })
 
 function AttemptDetailView({attemptId}: {attemptId: string}) {
-  const {data, isLoading} = useGetAttemptQuery(attemptId)
+  const {data, isLoading, isError, refetch} = useGetAttemptQuery(attemptId)
 
   if (isLoading) {
     return (
@@ -62,7 +59,11 @@ function AttemptDetailView({attemptId}: {attemptId: string}) {
     )
   }
 
-  if (!data) return null
+  if (isError || !data) {
+    return (
+      <ErrorView message="Natijalarni yuklashda xatolik" onRetry={refetch} />
+    )
+  }
 
   return (
     <View style={detailStyles.container}>
@@ -75,13 +76,13 @@ function AttemptDetailView({attemptId}: {attemptId: string}) {
               <View style={[
                 detailStyles.estimatedLevel,
                 {
-                  backgroundColor: (CEFR_COLORS[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE) + '20',
-                  borderColor: CEFR_COLORS[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE,
+                  backgroundColor: (CEFR_COLOR_MAP[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE) + '20',
+                  borderColor: CEFR_COLOR_MAP[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE,
                 },
               ]}>
                 <Text style={[
                   detailStyles.estimatedLevelText,
-                  {color: CEFR_COLORS[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE},
+                  {color: CEFR_COLOR_MAP[data.estimatedCefrLevel] || colors.PRIMARY_ORANGE},
                 ]}>
                   ~{data.estimatedCefrLevel}
                 </Text>
@@ -142,7 +143,7 @@ function AttemptDetailView({attemptId}: {attemptId: string}) {
             .filter(r => r.rubricScores && r.rubricScores.length > 0)
             .map(response => (
               <View key={response.id} style={detailStyles.rubricCard}>
-                {response.rubricScores!.map(rubric => (
+                {response.rubricScores?.map(rubric => (
                   <View key={rubric.criterionId} style={detailStyles.rubricRow}>
                     <Text style={detailStyles.rubricName}>{rubric.criterionName}</Text>
                     <ScoreBar score={rubric.score} max={rubric.maxScore} color='#8B5CF6' />
@@ -214,7 +215,7 @@ const detailStyles = StyleSheet.create({
 function AttemptCard({attempt}: {attempt: AttemptListResponse}) {
   const [expanded, setExpanded] = useState(false)
   const status = STATUS_LABELS[attempt.status] || {label: attempt.status, color: '#6B7280'}
-  const levelColor = CEFR_COLORS[attempt.cefrLevel] || colors.PRIMARY_ORANGE
+  const levelColor = CEFR_COLOR_MAP[attempt.cefrLevel] || colors.PRIMARY_ORANGE
 
   return (
     <View style={cardStyles.container}>
@@ -281,7 +282,7 @@ const cardStyles = StyleSheet.create({
 })
 
 export default function HistoryScreen() {
-  const {data, isLoading, refetch} = useGetAttemptHistoryQuery({})
+  const {data, isLoading, isError, refetch} = useGetAttemptHistoryQuery({})
   const attempts = data?.items || []
 
   const scoredAttempts = attempts.filter(a => a.scorePercentage != null)
@@ -292,6 +293,17 @@ export default function HistoryScreen() {
       : 0
   const bestScore =
     scoredAttempts.length > 0 ? Math.max(...scoredAttempts.map(a => a.scorePercentage || 0)) : 0
+
+  if (isError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Tarix</Text>
+        </View>
+        <ErrorView message="Tarixni yuklashda xatolik" onRetry={refetch} />
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>

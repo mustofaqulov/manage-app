@@ -25,7 +25,7 @@ const PREMIUM_FEATURES = [
 
 export default function SubscribeScreen() {
   const navigation = useNavigation()
-  const {data: subscription, isLoading} = useGetSubscriptionQuery()
+  const {data: subscription} = useGetSubscriptionQuery()
 
   const handleSubscribe = () => {
     Linking.openURL('https://t.me/managelcbot').catch(() => {
@@ -84,8 +84,8 @@ export default function SubscribeScreen() {
               <Text style={styles.planName}>Bepul</Text>
               <Text style={styles.planPrice}>0 so'm</Text>
             </View>
-            {FREE_FEATURES.map((f, i) => (
-              <View key={i} style={styles.featureRow}>
+            {FREE_FEATURES.map(f => (
+              <View key={f} style={styles.featureRow}>
                 <Text style={styles.featureCheck}>✓</Text>
                 <Text style={styles.featureText}>{f}</Text>
               </View>
@@ -103,8 +103,8 @@ export default function SubscribeScreen() {
               <Text style={[styles.planName, styles.premiumName]}>Premium</Text>
               <Text style={[styles.planPrice, styles.premiumPrice]}>Telegram orqali</Text>
             </View>
-            {PREMIUM_FEATURES.map((f, i) => (
-              <View key={i} style={styles.featureRow}>
+            {PREMIUM_FEATURES.map(f => (
+              <View key={f} style={styles.featureRow}>
                 <Text style={[styles.featureCheck, styles.premiumCheck]}>⭐</Text>
                 <Text style={styles.featureText}>{f}</Text>
               </View>

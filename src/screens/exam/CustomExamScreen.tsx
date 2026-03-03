@@ -14,15 +14,12 @@ import {useGetTestsQuery} from '../../store/api'
 import {CefrLevel} from '../../api/types'
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack'
 import type {RootStackParamList} from '../../navigation/RootNavigator'
-import {colors, typography, spacing, borderRadius} from '../../theme'
+import {colors, typography, spacing, borderRadius, CEFR_COLOR_MAP} from '../../theme'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
 const CEFR_LEVELS: CefrLevel[] = [CefrLevel.A1, CefrLevel.A2, CefrLevel.B1, CefrLevel.B2, CefrLevel.C1, CefrLevel.C2]
-const CEFR_COLORS: Record<string, string> = {
-  A1: '#10B981', A2: '#34D399', B1: '#3B82F6', B2: '#6366F1', C1: '#F59E0B', C2: '#EF4444',
-}
 
 export default function CustomExamScreen() {
   const navigation = useNavigation<NavigationProp>()
@@ -83,7 +80,7 @@ export default function CustomExamScreen() {
             <View style={styles.levelRow}>
               {CEFR_LEVELS.map(level => {
                 const isActive = selectedLevel === level
-                const color = CEFR_COLORS[level]
+                const color = CEFR_COLOR_MAP[level]
                 return (
                   <TouchableOpacity
                     key={level}
@@ -180,7 +177,7 @@ export default function CustomExamScreen() {
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Daraja:</Text>
-              <Text style={[styles.summaryValue, {color: CEFR_COLORS[selectedLevel]}]}>{selectedLevel}</Text>
+              <Text style={[styles.summaryValue, {color: CEFR_COLOR_MAP[selectedLevel]}]}>{selectedLevel}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Rejim:</Text>
